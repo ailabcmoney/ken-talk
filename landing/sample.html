@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡報範例 — Ken Talk</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Microsoft JhengHei',sans-serif;background:#0a0a12;color:#fff;min-height:100vh}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(10,10,18,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06)}
+.top-bar .logo{font-size:16px;font-weight:800;color:#C00000}
+.top-bar .nav{display:flex;gap:8px;align-items:center}
+.top-bar .page-info{font-size:13px;color:rgba(255,255,255,.5)}
+.top-bar a{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;padding:6px 14px;border-radius:8px;transition:.2s}
+.top-bar a:hover{background:rgba(255,255,255,.08);color:#fff}
+.top-bar .back{display:flex;align-items:center;gap:6px}
+
+.viewer{padding-top:56px;max-width:1100px;margin:0 auto}
+.slide-container{position:relative;overflow:hidden}
+.slide{display:none;animation:fadeIn .5s ease}
+.slide.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+
+/* Slide frame */
+.slide-frame{margin:24px;border-radius:16px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06);aspect-ratio:16/9;position:relative}
+
+/* Cover */
+.s-cover{display:flex;background:#fff}
+.s-cover .left{width:38%;background:#C00000;padding:48px 36px;display:flex;flex-direction:column;justify-content:center}
+.s-cover .left h1{font-size:clamp(22px,3vw,34px);font-weight:900;color:#fff;line-height:1.2;margin-bottom:12px}
+.s-cover .left p{font-size:14px;color:rgba(255,255,255,.8);line-height:1.6}
+.s-cover .right{flex:1;padding:48px 36px;display:flex;flex-direction:column;justify-content:center}
+.s-cover .right .sub{font-size:clamp(14px,2vw,18px);color:#4A4A4A;margin-bottom:16px;line-height:1.5}
+.s-cover .right .line{width:60px;height:3px;background:#C00000;margin-bottom:12px}
+.s-cover .right .meta{font-size:12px;color:#BFBFBF}
+
+/* Content slides */
+.s-content{background:#fff;color:#1C1C1B;padding:0;display:flex;flex-direction:column;height:100%}
+.s-header{padding:20px 36px 12px;border-top:4px solid #C00000}
+.s-header h2{font-size:clamp(16px,2.5vw,22px);font-weight:800;color:#1C1C1B;margin-bottom:4px}
+.s-header .sub{font-size:clamp(11px,1.5vw,13px);color:#7F7F7F;line-height:1.5}
+.s-body{flex:1;padding:12px 36px 8px;display:flex;flex-direction:column;justify-content:center}
+.s-footer{padding:8px 36px 12px;background:#F5F5F5;font-size:clamp(10px,1.2vw,12px);color:#4A4A4A;font-style:italic;display:flex;justify-content:space-between;align-items:center}
+.s-footer .pg{width:24px;height:24px;border-radius:50%;background:#C00000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-style:normal}
+
+/* Layout: bullets */
+.bullets li{font-size:clamp(12px,1.5vw,15px);color:#4A4A4A;line-height:1.7;margin-bottom:8px;padding-left:8px;list-style:none;position:relative}
+.bullets li::before{content:'';width:6px;height:6px;border-radius:50%;background:#C00000;position:absolute;left:-12px;top:8px}
+
+/* Layout: icons grid */
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.icon-card{background:#F5F5F5;border-radius:12px;padding:16px;text-align:center;border-top:3px solid var(--accent,#C00000)}
+.icon-card .emoji{font-size:28px;margin-bottom:6px}
+.icon-card h4{font-size:13px;font-weight:700;color:#1C1C1B;margin-bottom:4px}
+.icon-card p{font-size:11px;color:#7F7F7F;line-height:1.5}
+
+/* Layout: bigNumber */
+.big-num-wrap{text-align:center;padding:20px 0}
+.big-num-wrap .num{font-size:clamp(48px,8vw,80px);font-weight:900;color:#C00000}
+.big-num-wrap .label{font-size:clamp(14px,2vw,20px);color:#1C1C1B;font-weight:700;margin-top:4px}
+.big-num-wrap .sub{font-size:clamp(11px,1.5vw,14px);color:#2EAAAA;margin-top:4px}
+
+/* Layout: beforeAfter */
+.ba-wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start}
+.ba-col{background:#F5F5F5;border-radius:12px;padding:16px;min-height:120px}
+.ba-col h4{font-size:14px;font-weight:700;margin-bottom:10px;text-align:center;padding:6px;border-radius:8px;color:#fff}
+.ba-col.before h4{background:#7F7F7F}
+.ba-col.after h4{background:#548235}
+.ba-col li{font-size:12px;color:#4A4A4A;line-height:1.6;margin-bottom:4px;list-style:none}
+.ba-arrow{font-size:28px;color:#C00000;align-self:center;padding-top:24px}
+
+/* Layout: flow */
+.flow-wrap{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
+.flow-node{background:#F5F5F5;border:2px solid var(--accent,#C00000);border-radius:10px;padding:10px 14px;text-align:center;min-width:100px}
+.flow-node .step-num{width:22px;height:22px;border-radius:50%;background:var(--accent,#C00000);color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px}
+.flow-node p{font-size:11px;color:#4A4A4A;line-height:1.3}
+.flow-arrow{font-size:18px;color:#BFBFBF}
+
+/* Layout: table */
+.s-table{width:100%;border-collapse:collapse;font-size:clamp(10px,1.3vw,13px)}
+.s-table th{background:#C00000;color:#fff;padding:8px 12px;text-align:center;font-weight:700}
+.s-table td{padding:8px 12px;text-align:center;color:#4A4A4A;border-bottom:1px solid #eee}
+.s-table tr:nth-child(even) td{background:#F5F5F5}
+
+/* Layout: KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.kpi-card{background:#F5F5F5;border-radius:12px;padding:16px;text-align:center;border-top:3px solid var(--accent,#2F5496)}
+.kpi-card .knum{font-size:clamp(24px,4vw,36px);font-weight:900;color:var(--accent,#2F5496)}
+.kpi-card .trend{font-size:14px}
+.kpi-card h4{font-size:12px;font-weight:700;color:#1C1C1B;margin:4px 0 2px}
+.kpi-card p{font-size:10px;color:#7F7F7F}
+
+/* Layout: quote */
+.quote-wrap{border-left:4px solid #C00000;padding:20px 24px;background:#F5F5F5;border-radius:0 12px 12px 0;margin:12px 0}
+.quote-wrap .qt{font-size:clamp(14px,2vw,20px);font-style:italic;color:#1C1C1B;line-height:1.6;margin-bottom:8px}
+.quote-wrap .qa{font-size:13px;color:#C00000;text-align:right}
+
+/* Layout: timeline */
+.tl-wrap{position:relative;padding-left:28px}
+.tl-line{position:absolute;left:10px;top:0;bottom:0;width:3px;background:#C00000}
+.tl-item{position:relative;margin-bottom:14px;display:flex;gap:12px;align-items:flex-start}
+.tl-dot{width:20px;height:20px;border-radius:50%;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+.tl-item .info h5{font-size:12px;font-weight:700;color:#1C1C1B}
+.tl-item .info p{font-size:11px;color:#7F7F7F}
+
+/* End slide */
+.s-end{display:flex;background:#fff}
+.s-end .left{flex:1;padding:48px;display:flex;flex-direction:column;justify-content:center}
+.s-end .left h2{font-size:clamp(32px,5vw,48px);font-weight:900;color:#C00000;margin-bottom:12px}
+.s-end .left .line{width:60px;height:3px;background:#C00000;margin-bottom:12px}
+.s-end .left p{font-size:14px;color:#7F7F7F}
+.s-end .right{width:35%;background:#C00000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px}
+.s-end .right .emoji{font-size:48px;margin-bottom:12px}
+.s-end .right h3{font-size:20px;font-weight:800;color:#fff}
+
+/* Nav buttons */
+.slide-nav{display:flex;justify-content:center;gap:12px;padding:16px 24px}
+.slide-nav button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 24px;border-radius:10px;font-size:14px;cursor:pointer;transition:.2s;font-family:inherit}
+.slide-nav button:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
+.slide-nav button:disabled{opacity:.3;cursor:default}
+
+/* Thumbnails */
+.thumbs{display:flex;gap:6px;padding:0 24px 24px;overflow-x:auto;justify-content:center;flex-wrap:wrap}
+.thumb{width:64px;height:36px;border-radius:6px;background:rgba(255,255,255,.06);border:2px solid transparent;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.4);flex-shrink:0}
+.thumb:hover{border-color:rgba(255,255,255,.2)}
+.thumb.active{border-color:#C00000;background:rgba(192,0,0,.15);color:#fff}
+
+@media(max-width:768px){
+  .s-cover,.s-end{flex-direction:column}
+  .s-cover .left,.s-end .right{width:100%}
+  .ba-wrap{grid-template-columns:1fr;gap:8px}
+  .ba-arrow{display:none}
+  .flow-wrap{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="back">← 返回 Ken Talk</a>
+  <span class="logo">簡報範例</span>
+  <span class="page-info" id="pageInfo">1 / 12</span>
+</div>
+
+<div class="viewer">
+  <div class="slide-container" id="slides">
+
+    <!-- Slide 1: Cover -->
+    <div class="slide active">
+      <div class="slide-frame s-cover">
+        <div class="left">
+          <h1>用數據驅動改寫廣告行業規則</h1>
+          <p>藉由AI技術與龐大數據資源，提升市場競爭力與廣告投資效益</p>
+        </div>
+        <div class="right">
+          <div class="sub">一份由 Ken Talk 自動生成的簡報範例</div>
+          <div class="line"></div>
+          <div class="meta">Ken Talk | 討論即簡報 | 2026/4/10</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2: Bullets -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>用戶數據是我們獨特的市場優勢</h2>
+          <div class="sub">龐大的用戶基礎是我們為廣告商提供價值的根本</div>
+        </div>
+        <div class="s-body">
+          <ul class="bullets">
+            <li>我們的發票和記帳系統日活躍用戶超過百萬，這是我們推出精準廣告投放系統的基石。</li>
+            <li>用戶行為數據可以幫助我們深入了解廣告客戶需求，從而制定更具針對性的市場策略。</li>
+            <li>這些數據也是廣告商需求的關鍵，可以確保我們能滿足甚至超越他們的預期。</li>
+          </ul>
+        </div>
+        <div class="s-footer"><span>💡 介紹公司現有資源，說明數據為我們攜手廣告商的獨特優勢。</span><span class="pg">2</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Matrix/Icons -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>以技術為驅動的快速反應能力</h2>
+          <div class="sub">掌握AI技術優勢，加速市場響應速度</div>
+        </div>
+        <div class="s-body">
+          <div class="icon-grid">
+            <div class="icon-card" style="--accent:#C00000"><div class="emoji">📊</div><h4>數據驅動</h4><p>所有決策都基於數據分析，而不是主觀判斷，確保每一步都有依據。</p></div>
+            <div class="icon-card" style="--accent:#2F5496"><div class="emoji">🔄</div><h4>敏捷迭代</h4><p>兩週一個衝刺週期，迅速驗證市場需求改變並及時調整策略。</p></div>
+            <div class="icon-card" style="--accent:#2EAAAA"><div class="emoji">👥</div><h4>用戶中心</h4><p>定期進行用戶訪談，透過實際數據分析深刻了解消費者需求。</p></div>
+            <div class="icon-card" style="--accent:#548235"><div class="emoji">🏗️</div><h4>技術護城河</h4><p>以自研核心演算法優勢，構建競爭對手難以超越的技術壁壘。</p></div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 展示我們技術優勢如何支持廣告業務的快速反應與迭代。</span><span class="pg">3</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Big Number -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>數據驅動，提升廣告效能 40%</h2>
+          <div class="sub">透過AI分析實現更高廣告轉換率</div>
+        </div>
+        <div class="s-body">
+          <div class="big-num-wrap">
+            <div class="num">40%</div>
+            <div class="label">廣告效能提升</div>
+            <div class="sub">藉由AI分析與優化，顯著提升廣告效能</div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 強調數據驅動的優勢，展示系統效能實現呼應市場需求的具體成效。</span><span class="pg">4</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Before/After -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>現行手動數據分析與AI自動化對比</h2>
+          <div class="sub">AI工具的引入顯著縮短分析時間，提高精準度</div>
+        </div>
+        <div class="s-body">
+          <div class="ba-wrap">
+            <div class="ba-col before">
+              <h4>😞 現況</h4>
+              <ul><li>✕ 手動整理數據，耗時數小時</li><li>✕ 洞察有限，錯誤率高</li><li>✕ 無法即時追蹤市場變化</li></ul>
+            </div>
+            <div class="ba-arrow">→</div>
+            <div class="ba-col after">
+              <h4>😊 AI導入後</h4>
+              <ul><li>✓ 自動化報表生成，幾分鐘內完成</li><li>✓ 高精準度，錯誤率顯著降低</li><li>✓ 即時數據儀表板提供及時更新</li></ul>
+            </div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 對比展示AI技術在數據分析中的重大影響力，吸引高層對方案的支持。</span><span class="pg">5</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Flow -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>有效建構廣告商合作之五步驟</h2>
+          <div class="sub">確立策略方向及操作步驟，從定義目標至市場開發</div>
+        </div>
+        <div class="s-body">
+          <div class="flow-wrap">
+            <div class="flow-node" style="--accent:#C00000"><div class="step-num">1</div><p>市場調研<br>收集用戶痛點</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="--accent:#2F5496"><div class="step-num" style="background:#2F5496">2</div><p>建立假設<br>定義核心指標</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="--accent:#2EAAAA"><div class="step-num" style="background:#2EAAAA">3</div><p>數據驗證<br>小規模測試</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="--accent:#548235"><div class="step-num" style="background:#548235">4</div><p>策略優化<br>調整方向</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="--accent:#ED7D31"><div class="step-num" style="background:#ED7D31">5</div><p>規模推廣<br>全面執行</p></div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 清晰的步驟流程讓聽眾理解整體策略路徑。</span><span class="pg">6</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 7: Table -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>市場需求與潛在技術合作伙伴分析</h2>
+          <div class="sub">深入分析市場以確立合作策略方向</div>
+        </div>
+        <div class="s-body">
+          <table class="s-table">
+            <thead><tr><th>分析維度</th><th>現有市場</th><th>競爭優勢</th><th>合作潛力</th></tr></thead>
+            <tbody>
+              <tr><td>成本</td><td>高</td><td>中</td><td>可優化成本</td></tr>
+              <tr><td>科技水平</td><td>逐步提高</td><td>高</td><td>優勢顯著</td></tr>
+              <tr><td>市場擴展</td><td>有限</td><td>寬廣</td><td>擴展潛力大</td></tr>
+              <tr><td>數據應用</td><td>不成熟</td><td>成熟</td><td>合作價值高</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="s-footer"><span>💡 透過表格分析各細節，建立綜合視角以分享大局觀。</span><span class="pg">7</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 8: KPIs -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>用戶洞察為廣告策略提供實時支持</h2>
+          <div class="sub">持續獲取精準用戶數據，改善廣告指標</div>
+        </div>
+        <div class="s-body">
+          <div class="kpi-grid">
+            <div class="kpi-card" style="--accent:#C00000"><div class="trend" style="color:#548235">▲</div><div class="knum">90%</div><h4>用戶洞察準確率</h4><p>+5% 透過新算法</p></div>
+            <div class="kpi-card" style="--accent:#2F5496"><div class="trend" style="color:#548235">▲</div><div class="knum">95%</div><h4>廣告精準投放率</h4><p>顯著優於市場平均</p></div>
+            <div class="kpi-card" style="--accent:#2EAAAA"><div class="trend" style="color:#548235">▲</div><div class="knum">85萬</div><h4>月活躍用戶</h4><p>持續穩定增長</p></div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 介紹在用戶數據洞察方面我們的持續投入與成果。</span><span class="pg">8</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 9: Quote -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>即時選擇適宜策略，提升廣告效益</h2>
+          <div class="sub">AI技術整合數據分析，創造最佳投資回報</div>
+        </div>
+        <div class="s-body">
+          <div class="quote-wrap">
+            <div class="qt">「在數字時代，廣告不再是藝術，而是一門數據科學。」</div>
+            <div class="qa">— John Doe, 數據科學家</div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 引用權威觀點，強調數據科學對廣告的重大影響。</span><span class="pg">9</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Timeline -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>具體行動計畫：三個即時可執行的步驟</h2>
+          <div class="sub">落實廣告商模型推廣之具體步驟，從測試至完全推廣</div>
+        </div>
+        <div class="s-body">
+          <div class="tl-wrap">
+            <div class="tl-line"></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#C00000">1</div><div class="info"><h5>第1-2週</h5><p>市場需求調研與原型設計</p></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#2F5496">2</div><div class="info"><h5>第3-4週</h5><p>MVP 開發與初步內部測試</p></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#2EAAAA">3</div><div class="info"><h5>第5-6週</h5><p>數據收集結果評估與改善</p></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#548235">4</div><div class="info"><h5>第7-8週</h5><p>廣告效果市場測試</p></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#ED7D31">5</div><div class="info"><h5>第9-10週</h5><p>正式商業化推廣</p></div></div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 清晰闡述可行的時間計畫與主要里程碑。</span><span class="pg">10</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 11: Icons -->
+    <div class="slide">
+      <div class="slide-frame s-content">
+        <div class="s-header">
+          <h2>合作夥伴關係的價值提升戰略</h2>
+          <div class="sub">選擇最佳合作夥伴與工具，創造長期價值</div>
+        </div>
+        <div class="s-body">
+          <div class="icon-grid">
+            <div class="icon-card" style="--accent:#C00000"><div class="emoji">🤝</div><h4>強化合作</h4><p>加強與頂級廣告商的戰略合作，形成穩定的供應鏈</p></div>
+            <div class="icon-card" style="--accent:#2F5496"><div class="emoji">⚙️</div><h4>技術升級</h4><p>持續投資前沿技術，保持在廣告科技領域的領先地位</p></div>
+            <div class="icon-card" style="--accent:#2EAAAA"><div class="emoji">🔍</div><h4>數據優化</h4><p>利用先進AI技術進行持續數據優化，提供精準的市場洞察</p></div>
+            <div class="icon-card" style="--accent:#548235"><div class="emoji">💡</div><h4>持續創新</h4><p>不斷探索新理念與方法，推動廣告運營效率的提升</p></div>
+          </div>
+        </div>
+        <div class="s-footer"><span>💡 強調持續合作的重要性，同時不斷尋求創新。</span><span class="pg">11</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 12: End -->
+    <div class="slide">
+      <div class="slide-frame s-end">
+        <div class="left">
+          <h2>Thank You</h2>
+          <div class="line"></div>
+          <p>Generated by Ken Talk</p>
+        </div>
+        <div class="right">
+          <div class="emoji">🚀</div>
+          <h3>討論即簡報</h3>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-nav">
+    <button id="prevBtn" onclick="nav(-1)" disabled>← 上一頁</button>
+    <button id="nextBtn" onclick="nav(1)">下一頁 →</button>
+  </div>
+
+  <div class="thumbs" id="thumbs"></div>
+</div>
+
+<script>
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+const thumbsEl = document.getElementById('thumbs');
+
+// Generate thumbnails
+for(let i=0;i<total;i++){
+  const t = document.createElement('div');
+  t.className = 'thumb' + (i===0?' active':'');
+  t.textContent = i+1;
+  t.onclick = () => goTo(i);
+  thumbsEl.appendChild(t);
+}
+
+function goTo(n){
+  slides[current].classList.remove('active');
+  document.querySelectorAll('.thumb')[current].classList.remove('active');
+  current = n;
+  slides[current].classList.add('active');
+  document.querySelectorAll('.thumb')[current].classList.add('active');
+  document.getElementById('pageInfo').textContent = (current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = current===total-1;
+}
+
+function nav(d){ goTo(Math.max(0,Math.min(total-1,current+d))); }
+
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key===' ') nav(1);
+  if(e.key==='ArrowLeft') nav(-1);
+});
+
+// Swipe support
+let touchX=0;
+document.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX});
+document.addEventListener('touchend',e=>{
+  const diff=e.changedTouches[0].clientX-touchX;
+  if(Math.abs(diff)>50){diff<0?nav(1):nav(-1)}
+});
+</script>
+</body>
+</html>

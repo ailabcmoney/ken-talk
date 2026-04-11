@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ken Talk — 討論即簡報</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#C00000;--dark:#1C1C1B;--gray:#4A4A4A;--light:#F5F5F5;
+  --purple:#6C63FF;--teal:#2EAAAA;--blue:#2F5496;
+}
+body{font-family:-apple-system,'Microsoft JhengHei','Segoe UI',sans-serif;color:var(--dark);overflow-x:hidden;background:#0a0a12}
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.active{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-60px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-left.active{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(60px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-right.active{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(.85);transition:all .7s cubic-bezier(.16,1,.3,1)}
+.reveal-scale.active{opacity:1;transform:scale(1)}
+.stagger-1{transition-delay:.1s}.stagger-2{transition-delay:.2s}.stagger-3{transition-delay:.3s}
+.stagger-4{transition-delay:.4s}.stagger-5{transition-delay:.5s}.stagger-6{transition-delay:.6s}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg,#0a0a12 0%,#12122a 50%,#0a0a12 100%)}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.hero-bg .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;animation:float 8s ease-in-out infinite}
+.orb-1{width:500px;height:500px;background:var(--red);top:-10%;right:-5%;animation-delay:0s}
+.orb-2{width:400px;height:400px;background:var(--purple);bottom:-10%;left:-5%;animation-delay:3s}
+.orb-3{width:300px;height:300px;background:var(--teal);top:40%;left:30%;animation-delay:5s}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(108,99,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,.05) 1px,transparent 1px);background-size:60px 60px;animation:gridMove 20s linear infinite}
+@keyframes gridMove{to{transform:translate(60px,60px)}}
+.hero-content{position:relative;z-index:2;text-align:center;max-width:900px;padding:0 24px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);border-radius:100px;padding:8px 20px;font-size:13px;color:#8B85FF;margin-bottom:32px;backdrop-filter:blur(10px)}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:#4ECDC4;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.hero h1{font-size:clamp(42px,7vw,80px);font-weight:900;line-height:1.1;color:#fff;margin-bottom:24px}
+.hero h1 .gradient{background:linear-gradient(135deg,var(--red),#FF6B6B,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:clamp(16px,2.5vw,22px);color:rgba(255,255,255,.6);max-width:600px;margin:0 auto 40px;line-height:1.6}
+.hero-cta{display:inline-flex;align-items:center;gap:12px;background:var(--red);color:#fff;font-size:18px;font-weight:700;padding:16px 40px;border-radius:60px;text-decoration:none;transition:all .3s;box-shadow:0 8px 32px rgba(192,0,0,.4);position:relative;overflow:hidden}
+.hero-cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(192,0,0,.6)}
+.hero-cta .shine{position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:rotate(45deg);animation:shine 3s infinite}
+@keyframes shine{0%{left:-200%}100%{left:200%}}
+.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:60px}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:36px;font-weight:900;color:#fff}
+.hero-stat .label{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px}
+.scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.3);font-size:12px}
+.scroll-hint .arrow{width:20px;height:20px;border-right:2px solid rgba(255,255,255,.3);border-bottom:2px solid rgba(255,255,255,.3);transform:rotate(45deg);animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(5px,5px)}}
+
+/* ===== AVATAR ===== */
+.avatar-section{padding:100px 24px;background:#0d0d1a}
+.avatar-card{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:60px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:48px;backdrop-filter:blur(20px)}
+.avatar-img-wrap{position:relative;flex-shrink:0}
+.avatar-img-wrap img{width:160px;height:160px;border-radius:50%;border:3px solid var(--red);object-fit:cover}
+.avatar-ring{position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--red);opacity:.3;animation:ring 3s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.1);opacity:.1}}
+.avatar-info h3{font-size:28px;font-weight:800;color:#fff;margin-bottom:8px}
+.avatar-info .role{font-size:14px;color:var(--red);margin-bottom:16px}
+.avatar-info .quote{font-size:16px;color:rgba(255,255,255,.5);line-height:1.7;font-style:italic;border-left:3px solid var(--red);padding-left:16px}
+
+/* ===== PAIN ===== */
+.pain{padding:120px 24px;background:linear-gradient(180deg,#0d0d1a,#111125)}
+.section-label{font-size:13px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:3px;text-align:center;margin-bottom:12px}
+.section-title{font-size:clamp(28px,4vw,44px);font-weight:900;color:#fff;text-align:center;margin-bottom:16px;line-height:1.2}
+.section-sub{font-size:16px;color:rgba(255,255,255,.45);text-align:center;max-width:600px;margin:0 auto 60px;line-height:1.6}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;max-width:1100px;margin:0 auto}
+.pain-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px;transition:all .4s;position:relative;overflow:hidden}
+.pain-card:hover{transform:translateY(-8px);border-color:rgba(192,0,0,.3);box-shadow:0 20px 60px rgba(192,0,0,.1)}
+.pain-card .accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:transform .4s;transform-origin:left}
+.pain-card:hover .accent{transform:scaleX(1)}
+.pain-card .icon{font-size:40px;margin-bottom:16px}
+.pain-card h4{font-size:18px;font-weight:700;color:#fff;margin-bottom:8px}
+.pain-card p{font-size:14px;color:rgba(255,255,255,.4);line-height:1.6}
+
+/* ===== HOW ===== */
+.how{padding:120px 24px;background:#0a0a12;position:relative}
+.how-flow{display:flex;justify-content:center;align-items:center;gap:0;max-width:1200px;margin:0 auto;flex-wrap:wrap}
+.how-step{display:flex;flex-direction:column;align-items:center;width:180px;position:relative}
+.how-step .num{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.how-step h4{font-size:15px;font-weight:700;color:#fff;text-align:center;margin-bottom:6px}
+.how-step p{font-size:12px;color:rgba(255,255,255,.4);text-align:center;line-height:1.5}
+.how-arrow{font-size:24px;color:rgba(255,255,255,.15);margin:0 8px;padding-top:0}
+
+/* ===== FEATURES ===== */
+.features{padding:120px 24px;background:linear-gradient(180deg,#0a0a12,#0d0d1a)}
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1000px;margin:0 auto}
+.feat-card{display:flex;gap:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:28px;transition:all .4s}
+.feat-card:hover{border-color:rgba(108,99,255,.3);transform:translateX(8px)}
+.feat-card .feat-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.feat-card h4{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px}
+.feat-card p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6}
+
+/* ===== LAYOUTS SHOWCASE ===== */
+.layouts{padding:120px 24px;background:#0a0a12}
+.layout-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;margin:0 auto}
+.layout-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;text-align:center;transition:all .4s;cursor:default}
+.layout-card:hover{background:rgba(108,99,255,.08);border-color:rgba(108,99,255,.3);transform:scale(1.05)}
+.layout-card .l-icon{font-size:32px;margin-bottom:8px}
+.layout-card h5{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.layout-card p{font-size:11px;color:rgba(255,255,255,.35)}
+
+/* ===== METRICS ===== */
+.metrics{padding:120px 24px;background:linear-gradient(180deg,#0a0a12,#111125)}
+.metrics-grid{display:flex;justify-content:center;gap:40px;max-width:1000px;margin:0 auto;flex-wrap:wrap}
+.metric-card{text-align:center;padding:40px 32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;min-width:220px;flex:1;transition:all .4s;position:relative;overflow:hidden}
+.metric-card:hover{transform:translateY(-8px);border-color:rgba(192,0,0,.3)}
+.metric-card .m-num{font-size:56px;font-weight:900;margin-bottom:8px;background:linear-gradient(135deg,var(--red),#FF6B6B);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.metric-card h4{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px}
+.metric-card p{font-size:13px;color:rgba(255,255,255,.4)}
+
+/* ===== CTA ===== */
+.cta{padding:120px 24px;background:#0d0d1a;text-align:center;position:relative}
+.cta::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:400px;height:400px;background:var(--red);border-radius:50%;filter:blur(150px);opacity:.08}
+.cta h2{font-size:clamp(32px,5vw,52px);font-weight:900;color:#fff;margin-bottom:16px}
+.cta p{font-size:18px;color:rgba(255,255,255,.5);margin-bottom:40px}
+.cta-buttons{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-size:18px;font-weight:700;padding:16px 36px;border-radius:60px;text-decoration:none;transition:all .3s;box-shadow:0 8px 32px rgba(192,0,0,.3)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(192,0,0,.5)}
+.btn-secondary{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#fff;font-size:18px;font-weight:700;padding:16px 36px;border-radius:60px;text-decoration:none;border:2px solid rgba(255,255,255,.15);transition:all .3s}
+.btn-secondary:hover{border-color:rgba(255,255,255,.4);transform:translateY(-3px)}
+
+/* ===== FOOTER ===== */
+footer{padding:40px 24px;background:#080810;text-align:center;color:rgba(255,255,255,.2);font-size:13px}
+
+/* ===== TYPING ===== */
+.typing-demo{display:inline;border-right:2px solid var(--red);animation:blink .8s infinite;white-space:nowrap}
+@keyframes blink{50%{border-color:transparent}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .avatar-card{flex-direction:column;text-align:center;padding:32px}
+  .avatar-info .quote{border-left:none;padding-left:0;border-top:3px solid var(--red);padding-top:16px}
+  .feat-grid{grid-template-columns:1fr}
+  .layout-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-stats{gap:24px}
+  .how-flow{flex-direction:column;gap:16px}
+  .how-arrow{transform:rotate(90deg)}
+}
+
+/* ===== COUNTER ===== */
+.counter{display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge reveal stagger-1"><span class="dot"></span> 全新上線</div>
+    <h1 class="reveal stagger-2">跟老闆對話<br><span class="gradient">一鍵出簡報</span></h1>
+    <p class="reveal stagger-3">Ken Talk 用 AI 模擬老闆的思維模式，讓你在對話中打磨想法，<br>討論完畢後自動生成讓老闆 Buy-in 的專業簡報</p>
+    <a href="http://localhost:8081" class="hero-cta reveal stagger-4">
+      <span class="shine"></span>
+      <span>立即體驗</span>
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+    </a>
+    <div class="hero-stats reveal stagger-5">
+      <div class="hero-stat"><div class="num">12</div><div class="label">種簡報版面</div></div>
+      <div class="hero-stat"><div class="num">30</div><div class="label">秒生成簡報</div></div>
+      <div class="hero-stat"><div class="num">80%</div><div class="label">時間節省</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>向下探索</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- KEN AVATAR -->
+<section class="avatar-section">
+  <div class="avatar-card reveal-left">
+    <div class="avatar-img-wrap reveal-scale stagger-1">
+      <div class="avatar-ring"></div>
+      <img src="../assets/ken-avatar.png" alt="Ken">
+    </div>
+    <div class="avatar-info reveal-right stagger-2">
+      <h3>李岳能 (Ken)</h3>
+      <div class="role">CMoney 創辦人 ・ INTJ ・ 長線思維</div>
+      <div class="quote">「不是用說教的方式來幫助別人，而是潛移默化的方式來讓人變得更好。」</div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section class="pain">
+  <div class="section-label reveal">The Problem</div>
+  <h2 class="section-title reveal">每次做簡報，你是不是也這樣？</h2>
+  <p class="section-sub reveal">我們花了太多時間在「猜老闆想看什麼」，而不是「把想法說清楚」</p>
+  <div class="pain-grid">
+    <div class="pain-card reveal stagger-1">
+      <div class="accent"></div>
+      <div class="icon">😩</div>
+      <h4>做了 3 小時的簡報</h4>
+      <p>老闆一句「這不是我要的」，全部重來。反覆修改到懷疑人生。</p>
+    </div>
+    <div class="pain-card reveal stagger-2">
+      <div class="accent"></div>
+      <div class="icon">🤔</div>
+      <h4>猜不透老闆在想什麼</h4>
+      <p>他在意長線思維？護城河？還是用戶體驗？每次都像在賭博。</p>
+    </div>
+    <div class="pain-card reveal stagger-3">
+      <div class="accent"></div>
+      <div class="icon">⏰</div>
+      <h4>想法到簡報要 3 天</h4>
+      <p>想法 → 文件 → 找人討論 → 修改 → 會議 → 再修改。來回消耗。</p>
+    </div>
+    <div class="pain-card reveal stagger-4">
+      <div class="accent"></div>
+      <div class="icon">📊</div>
+      <h4>簡報品質靠運氣</h4>
+      <p>有時做得很好，有時慘不忍睹。沒有穩定的品質保證機制。</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-label reveal">How It Works</div>
+  <h2 class="section-title reveal">五步驟，從想法到簡報</h2>
+  <p class="section-sub reveal">不需要打開 PowerPoint，只要跟 Ken 聊天就好</p>
+  <div class="how-flow">
+    <div class="how-step reveal stagger-1">
+      <div class="num" style="background:var(--red)">1</div>
+      <h4>說出你的想法</h4>
+      <p>用自然語言跟 Ken AI 聊你想做的事</p>
+    </div>
+    <div class="how-arrow reveal stagger-1">→</div>
+    <div class="how-step reveal stagger-2">
+      <div class="num" style="background:var(--blue)">2</div>
+      <h4>Ken 即時回饋</h4>
+      <p>AI 模擬老闆視角提問，幫你打磨想法</p>
+    </div>
+    <div class="how-arrow reveal stagger-2">→</div>
+    <div class="how-step reveal stagger-3">
+      <div class="num" style="background:var(--teal)">3</div>
+      <h4>自動整理重點</h4>
+      <p>AI 從對話中提取核心論點和數據</p>
+    </div>
+    <div class="how-arrow reveal stagger-3">→</div>
+    <div class="how-step reveal stagger-4">
+      <div class="num" style="background:#548235">4</div>
+      <h4>一鍵生成簡報</h4>
+      <p>12 種專業版面自動配置</p>
+    </div>
+    <div class="how-arrow reveal stagger-4">→</div>
+    <div class="how-step reveal stagger-5">
+      <div class="num" style="background:#ED7D31">5</div>
+      <h4>下載 & 分享</h4>
+      <p>PPT 或 Google Slides 一鍵匯出</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label reveal">Features</div>
+  <h2 class="section-title reveal">不只是簡報工具</h2>
+  <p class="section-sub reveal">Ken Talk 是一個思考加速器，幫你在對話中自然地提升思考品質</p>
+  <div class="feat-grid">
+    <div class="feat-card reveal stagger-1">
+      <div class="feat-icon" style="background:rgba(192,0,0,.15)">🤖</div>
+      <div>
+        <h4>AI 老闆模擬器</h4>
+        <p>完整模擬 Ken 的思維框架、提問方式、價值觀。讓你提前知道老闆會問什麼，避免上場才被問到啞口無言。</p>
+      </div>
+    </div>
+    <div class="feat-card reveal stagger-2">
+      <div class="feat-icon" style="background:rgba(47,84,150,.15)">📊</div>
+      <div>
+        <h4>12 種專業版面</h4>
+        <p>表格、流程圖、時間軸、KPI 儀表板、金字塔、前後對比... AI 自動選擇最適合的版面呈現你的論點。</p>
+      </div>
+    </div>
+    <div class="feat-card reveal stagger-3">
+      <div class="feat-icon" style="background:rgba(46,170,170,.15)">⚡</div>
+      <div>
+        <h4>30 秒出簡報</h4>
+        <p>從對話到完整簡報，只要 30 秒。支援 PPT 下載和 Google Slides 一鍵儲存。</p>
+      </div>
+    </div>
+    <div class="feat-card reveal stagger-4">
+      <div class="feat-icon" style="background:rgba(108,99,255,.15)">🎯</div>
+      <div>
+        <h4>SCQA 說服框架</h4>
+        <p>自動套用情境→衝突→問題→解答的說服邏輯，每頁標題都是結論，讓老闆一眼抓住重點。</p>
+      </div>
+    </div>
+    <div class="feat-card reveal stagger-5">
+      <div class="feat-icon" style="background:rgba(237,125,49,.15)">🔧</div>
+      <div>
+        <h4>自訂 Prompt</h4>
+        <p>可以修改老闆人格設定和簡報生成邏輯，適用於不同主管、不同報告場景。</p>
+      </div>
+    </div>
+    <div class="feat-card reveal stagger-6">
+      <div class="feat-icon" style="background:rgba(84,130,53,.15)">📱</div>
+      <div>
+        <h4>iOS + Web 雙平台</h4>
+        <p>手機上隨時跟 Ken 聊聊想法，電腦上生成簡報下載。隨時隨地，想到就做。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 LAYOUTS -->
+<section class="layouts">
+  <div class="section-label reveal">12 Layouts</div>
+  <h2 class="section-title reveal">你的簡報不再只有列點</h2>
+  <p class="section-sub reveal">AI 自動根據內容選擇最適合的視覺呈現</p>
+  <div class="layout-grid">
+    <div class="layout-card reveal-scale stagger-1"><div class="l-icon">📝</div><h5>重點列表</h5><p>Bullets</p></div>
+    <div class="layout-card reveal-scale stagger-1"><div class="l-icon">📊</div><h5>數據表格</h5><p>Table</p></div>
+    <div class="layout-card reveal-scale stagger-2"><div class="l-icon">🔄</div><h5>流程圖</h5><p>Flow</p></div>
+    <div class="layout-card reveal-scale stagger-2"><div class="l-icon">🎯</div><h5>圖示卡片</h5><p>Icons</p></div>
+    <div class="layout-card reveal-scale stagger-3"><div class="l-icon">📅</div><h5>時間軸</h5><p>Timeline</p></div>
+    <div class="layout-card reveal-scale stagger-3"><div class="l-icon">⚖️</div><h5>對比分析</h5><p>Compare</p></div>
+    <div class="layout-card reveal-scale stagger-4"><div class="l-icon">💯</div><h5>大數字</h5><p>Big Number</p></div>
+    <div class="layout-card reveal-scale stagger-4"><div class="l-icon">💬</div><h5>引言金句</h5><p>Quote</p></div>
+    <div class="layout-card reveal-scale stagger-5"><div class="l-icon">🧩</div><h5>矩陣卡片</h5><p>Matrix</p></div>
+    <div class="layout-card reveal-scale stagger-5"><div class="l-icon">📈</div><h5>KPI 儀表板</h5><p>KPIs</p></div>
+    <div class="layout-card reveal-scale stagger-6"><div class="l-icon">🔀</div><h5>前後對比</h5><p>Before/After</p></div>
+    <div class="layout-card reveal-scale stagger-6"><div class="l-icon">🔺</div><h5>金字塔</h5><p>Pyramid</p></div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section class="metrics">
+  <div class="section-label reveal">Impact</div>
+  <h2 class="section-title reveal">預期效益</h2>
+  <p class="section-sub reveal">讓每個人的想法都能被「正確地」傳達</p>
+  <div class="metrics-grid">
+    <div class="metric-card reveal stagger-1">
+      <div class="m-num"><span class="counter" data-target="80">0</span>%</div>
+      <h4>簡報時間縮短</h4>
+      <p>從 3 小時 → 30 分鐘</p>
+    </div>
+    <div class="metric-card reveal stagger-2">
+      <div class="m-num"><span class="counter" data-target="3">0</span>x</div>
+      <h4>提案通過率</h4>
+      <p>提前模擬老闆思維</p>
+    </div>
+    <div class="metric-card reveal stagger-3">
+      <div class="m-num"><span class="counter" data-target="12">0</span></div>
+      <h4>種專業版面</h4>
+      <p>AI 自動選擇最佳呈現</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2 class="reveal">準備好了嗎？</h2>
+  <p class="reveal">下次報告前，先跟 Ken 聊 15 分鐘</p>
+  <div class="cta-buttons reveal stagger-2">
+    <a href="http://localhost:8081" class="btn-primary">
+      <span>開始使用 Ken Talk</span>
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+    </a>
+    <a href="sample.html" class="btn-secondary">
+      <span>查看簡報範例</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>Ken Talk &copy; 2026 — 討論即簡報 &nbsp;|&nbsp; Built with AI</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('active');observer.unobserve(e.target)} });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => observer.observe(el));
+
+// Counter animation
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const el = e.target;
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 40;
+      const timer = setInterval(() => {
+        current += step;
+        if(current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.round(current);
+      }, 30);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
